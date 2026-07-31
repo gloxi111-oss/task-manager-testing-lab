@@ -32,6 +32,7 @@ describe('TaskCard', () => {
   });
 
   it('llama a onDelete con el id correcto al presionar "Eliminar"', async () => {
+    // Mock: aislamos la dependencia del componente padre
     await render(<TaskCard task={mockTask} onDelete={mockOnDelete} />);
     await fireEvent.press(screen.getByText('Eliminar'));
     expect(mockOnDelete).toHaveBeenCalledWith('1');

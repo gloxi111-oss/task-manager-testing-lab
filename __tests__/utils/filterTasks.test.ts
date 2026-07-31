@@ -1,32 +1,41 @@
 import { filterTasksByStatus } from '../../src/utils/filterTasks';
 import { Task } from '../../src/types';
 
-const mockTasks: Task[] = [
+const tasks: Task[] = [
   { id: '1', title: 'Comprar leche', status: 'pending' },
-  { id: '2', title: 'Estudiar React Native', status: 'completed' },
+  { id: '2', title: 'Estudiar Jest', status: 'completed' },
   { id: '3', title: 'Hacer ejercicio', status: 'pending' },
-  { id: '4', title: 'Leer documentación de Jest', status: 'completed' },
 ];
 
 describe('filterTasksByStatus', () => {
-  it('devuelve solo las tareas con el estado indicado', () => {
-    const result = filterTasksByStatus(mockTasks, 'completed');
-    expect(result).toHaveLength(2);
-    expect(result[0].title).toBe('Estudiar React Native');
+  it('devuelve todas las tareas cuando el status es "all"', () => {
+    expect(filterTasksByStatus(tasks, 'all')).toEqual(tasks);
   });
 
-  it('devuelve un arreglo vacío cuando no hay coincidencias', () => {
-    const result = filterTasksByStatus(mockTasks, 'archived');
+  it('filtra solo las tareas pendientes', () => {
+    const result = filterTasksByStatus(tasks, 'pending');
+    expect(result).toHaveLength(2);
+    expect(result[0].title).toBe('Comprar leche');
+  });
+
+  it('filtra solo las tareas completadas', () => {
+    const result = filterTasksByStatus(tasks, 'completed');
+    expect(result).toHaveLength(1);
+    expect(result.map((t) => t.id)).toContain('2');
+  });
+
+  it('devuelve un array vacío si no hay tareas del status pedido', () => {
+    const result = filterTasksByStatus(tasks, 'archived');
     expect(result).toEqual([]);
   });
 
-  it('devuelve todas las tareas cuando el estado es "all"', () => {
-    const result = filterTasksByStatus(mockTasks, 'all');
-    expect(result).toHaveLength(4);
+  it('lanza error cuando el status es inválido', () => {
+    expect(() => filterTasksByStatus(tasks, 'invalid' as any)).toThrow(
+      'Estado inválido'
+    );
   });
 
-  it('lanza un error cuando el estado es inválido', () => {
-    // @ts-expect-error probando entrada inválida en runtime
-    expect(() => filterTasksByStatus(mockTasks, 'invalido')).toThrow();
+  it('lanza error con status vacío (caso límite)', () => {
+    expect(() => filterTasksByStatus(tasks, '' as any)).toThrow();
   });
 });
