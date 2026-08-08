@@ -1,7 +1,11 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../src/mocks/server';
 import { CreateTaskScreen } from '../../src/screens/CreateTaskScreen';
+
+const API_URL = 'https://api.taskmanager.com';
 
 const metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -16,6 +20,7 @@ const renderScreen = () =>
   );
 
 describe('CreateTaskScreen - Integración', () => {
+  // Escenario 1: Éxito
   it('crea una tarea exitosamente y muestra confirmación', async () => {
     await renderScreen();
 
@@ -28,5 +33,42 @@ describe('CreateTaskScreen - Integración', () => {
     await waitFor(() => {
       expect(screen.getByText('Tarea creada exitosamente')).toBeTruthy();
     });
+  });
+
+  // Escenario 2: Error de la API
+  it('muestra mensaje de error cuando la API falla', async () => {
+    // Sobrescribimos el handler de MSW para forzar un error 500
+    server.use(
+      http.post(`${API_URL}/tasks`, () => {
+        return HttpResponse.json(
+          { message: 'Error interno del servidor' },
+          { status: 500 }
+        );
+      })
+    );
+
+    await renderScreen();
+
+    await fireEvent.changeText(
+      screen.getByPlaceholderText('Escribe el título de la tarea'),
+      'Tarea que fallará'
+    );
+    await fireEvent.press(screen.getByText('Guardar'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Error al crear la tarea')).toBeTruthy();
+    });
+  });
+
+  // Escenario 3: Datos vacíos / no se envía
+  it('no muestra confirmación ni error si el título está vacío', async () => {
+    await renderScreen();
+
+    // Presionar Guardar sin escribir nada
+    await fireEvent.press(screen.getByText('Guardar'));
+
+    // No debe aparecer mensaje de éxito ni de error
+    expect(screen.queryByText('Tarea creada exitosamente')).toBeNull();
+    expect(screen.queryByText('Error al crear la tarea')).toBeNull();
   });
 });

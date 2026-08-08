@@ -1,6 +1,10 @@
-appId: com.taskmanager.app
+appId: host.exp.exponent
 ---
 - launchApp
+- tapOn: "task-manager"
+- extendedWaitUntil:
+    visible: "Nueva tarea"
+    timeout: 20000
 - assertVisible: "Nueva tarea"
 - tapOn:
     id: "input-titulo"

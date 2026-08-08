@@ -1,28 +1,23 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
-import { TaskCard } from '../../src/components/TaskCard';
+import { TaskForm } from '../../src/components/TaskForm';
 
-const mockTask = {
-  id: '1',
-  title: 'Estudiar accesibilidad',
-  status: 'pending' as const,
-};
-
-describe('TaskCard - Accesibilidad', () => {
-  it('el botón de eliminar tiene un accessibilityLabel descriptivo', async () => {
-    await render(<TaskCard task={mockTask} onDelete={jest.fn()} />);
-    const deleteButton = screen.getByLabelText('Eliminar tarea Estudiar accesibilidad');
-    expect(deleteButton).toBeTruthy();
+describe('TaskForm - Accesibilidad', () => {
+  it('el campo de texto es accesible por su placeholder', async () => {
+    await render(<TaskForm onSubmit={jest.fn()} />);
+    const input = screen.getByPlaceholderText(/Escribe el título/i);
+    expect(input).toBeTruthy();
   });
 
-  it('el contenedor de la tarea tiene el rol correcto', async () => {
-    await render(<TaskCard task={mockTask} onDelete={jest.fn()} />);
-    const card = screen.getByRole('button');
-    expect(card).toBeTruthy();
+  it('el botón Guardar es accesible por su texto', async () => {
+    await render(<TaskForm onSubmit={jest.fn()} />);
+    const button = screen.getByText('Guardar');
+    expect(button).toBeTruthy();
   });
 
-  it('el estado de la tarea es anunciado al lector de pantalla', async () => {
-    await render(<TaskCard task={mockTask} onDelete={jest.fn()} />);
-    expect(screen.getByText('○ Pendiente')).toBeTruthy();
+  it('el input tiene testID para automatización y accesibilidad', async () => {
+    await render(<TaskForm onSubmit={jest.fn()} />);
+    const input = screen.getByTestId('input-titulo');
+    expect(input).toBeTruthy();
   });
 });

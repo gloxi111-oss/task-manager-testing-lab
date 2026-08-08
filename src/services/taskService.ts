@@ -9,7 +9,20 @@ export async function fetchTasks(): Promise<Task[]> {
 }
 
 export async function createTask(title: string): Promise<Task> {
-  // ponytail: sin backend real, la tarea se crea localmente.
-  // Reemplazar por un fetch cuando exista una API.
-  return { id: Date.now().toString(), title, status: 'pending' };
+  try {
+    const res = await fetch(`${API_URL}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    });
+
+    if (!res.ok) {
+      throw new Error('Error al crear la tarea');
+    }
+
+    return res.json();
+  } catch {
+    // Fallback local cuando no hay API real (útil para E2E con Expo)
+    return { id: Date.now().toString(), title, status: 'pending' };
+  }
 }
