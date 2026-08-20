@@ -16,13 +16,18 @@ export async function createTask(title: string): Promise<Task> {
       body: JSON.stringify({ title }),
     });
 
+    // Error HTTP controlado (MSW 500, 400, etc.) → debe fallar la prueba de error
     if (!res.ok) {
       throw new Error('Error al crear la tarea');
     }
 
     return res.json();
-  } catch {
-    // Fallback local cuando no hay API real (útil para E2E con Expo)
+  } catch (error) {
+    // Re-lanzar errores HTTP intencionales (no usar fallback)
+    if (error instanceof Error && error.message === 'Error al crear la tarea') {
+      throw error;
+    }
+    // Solo fallback local si es fallo de red real (sin API / E2E en Expo)
     return { id: Date.now().toString(), title, status: 'pending' };
   }
 }
